@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 
 export default function Home() {
   const [newTodo, setNewTodo] = useState('');
+  const [dueDate, setDueDate] = useState('');
   const [todos, setTodos] = useState([]);
 
   useEffect(() => {
@@ -26,9 +27,10 @@ export default function Home() {
       await fetch('/api/todos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: newTodo }),
+        body: JSON.stringify({ title: newTodo, dueDate }),
       });
       setNewTodo('');
+      setDueDate('');
       fetchTodos();
     } catch (error) {
       console.error('Failed to add todo:', error);
@@ -46,6 +48,10 @@ export default function Home() {
     }
   };
 
+  const isOverdue = (dueDate: string) => {
+    return new Date(dueDate) < new Date();
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-500 to-red-500 flex flex-col items-center p-4">
       <div className="w-full max-w-md">
@@ -59,7 +65,12 @@ export default function Home() {
             onChange={(e) => setNewTodo(e.target.value)}
           
           />
-          <input type="date" />
+          <input
+            type="date"
+            value={dueDate}  // Bind the due date input to state
+            onChange={(e) => setDueDate(e.target.value)}
+            className=""
+          />
           <button
             onClick={handleAddTodo}
             className="bg-white text-indigo-600 p-3 rounded-r-full hover:bg-gray-100 transition duration-300"
@@ -74,6 +85,13 @@ export default function Home() {
               className="flex justify-between items-center bg-white bg-opacity-90 p-4 mb-4 rounded-lg shadow-lg"
             >
               <span className="text-gray-800">{todo.title}</span>
+              {todo.dueDate && (
+                <span
+                  className={`ml-4 ${isOverdue(todo.dueDate) ? 'text-red-500' : 'text-gray-600'}`}
+                >
+                  Due: {new Date(todo.dueDate).toLocaleDateString()}
+                </span>
+              )}
               <button
                 onClick={() => handleDeleteTodo(todo.id)}
                 className="text-red-500 hover:text-red-700 transition duration-300"

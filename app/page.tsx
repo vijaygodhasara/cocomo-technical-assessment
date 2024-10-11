@@ -53,67 +53,87 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-500 to-red-500 flex flex-col items-center p-4">
-      <div className="w-full max-w-md">
-        <h1 className="text-4xl font-bold text-center text-white mb-8">Things To Do App</h1>
-        <div className="flex mb-6">
+    <div className="min-h-screen flex justify-center bg-gradient-to-b from-orange-400 to-red-500 p-6">
+      <div className="w-full max-w-2xl rounded-lg p-8 space-y-8">
+        {/* App Title */}
+        <h1 className="text-4xl font-extrabold text-center text-gray-800 mb-6">
+          Things To Do App
+        </h1>
+
+        {/* Form Section */}
+        <div className="flex flex-col md:flex-row md:items-center md:space-x-4 mb-6">
           <input
             type="text"
-            className="flex-grow p-3 rounded-l-full focus:outline-none text-gray-700"
-            placeholder="Add a new todo"
+            className="flex-grow p-4 mb-4 md:mb-0 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-md border border-gray-300"
+            placeholder="Add a new task"
             value={newTodo}
             onChange={(e) => setNewTodo(e.target.value)}
-          
           />
           <input
             type="date"
-            value={dueDate}  // Bind the due date input to state
+            className="p-4 mb-4 md:mb-0 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-md"
+            value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className=""
           />
           <button
             onClick={handleAddTodo}
-            className="bg-white text-indigo-600 p-3 rounded-r-full hover:bg-gray-100 transition duration-300"
+            className="py-4 px-6 bg-indigo-600 text-white font-semibold rounded-full hover:bg-indigo-700 transition duration-300 shadow-md"
           >
-            Add
+            Add Task
           </button>
         </div>
-        <ul>
-          {todos.map((todo:Todo) => (
-            <li
-              key={todo.id}
-              className="flex justify-between items-center bg-white bg-opacity-90 p-4 mb-4 rounded-lg shadow-lg"
-            >
-              <span className="text-gray-800">{todo.title}</span>
-              {todo.dueDate && (
-                <span
-                  className={`ml-4 ${isOverdue(todo.dueDate) ? 'text-red-500' : 'text-gray-600'}`}
+
+        {/* Task List Section */}
+        <div className="overflow-y-auto border-gray-200 rounded-lg p-4 ">
+          <h2 className="text-2xl font-semibold text-gray-700 mb-4 text-center">
+            Your Tasks
+          </h2>
+          <ul className="space-y-4">
+            {todos.length === 0 ? (
+              <li className="text-gray-500 text-center">No tasks available. Add a task!</li>
+            ) : (
+              todos.map((todo) => (
+                <li
+                  key={todo.id}
+                  className="flex justify-between items-center p-4 rounded-lg shadow-md border border-gray-200 bg-gray-50"
                 >
-                  Due: {new Date(todo.dueDate).toLocaleDateString()}
-                </span>
-              )}
-              <button
-                onClick={() => handleDeleteTodo(todo.id)}
-                className="text-red-500 hover:text-red-700 transition duration-300"
-              >
-                {/* Delete Icon */}
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </li>
-          ))}
-        </ul>
+                  <div>
+                    <span className="text-lg font-medium text-gray-800">{todo.title}</span>
+                    {todo.dueDate && (
+                      <span
+                        className={`block text-sm mt-1 ${
+                          isOverdue(todo.dueDate) ? 'text-red-600' : 'text-gray-500'
+                        }`}
+                      >
+                        Due: {new Date(todo.dueDate).toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => handleDeleteTodo(todo.id)}
+                    className="text-red-500 hover:text-red-700 transition duration-300"
+                  >
+                    {/* Delete Icon */}
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </li>
+              ))
+            )}
+          </ul>
+        </div>
       </div>
     </div>
   );

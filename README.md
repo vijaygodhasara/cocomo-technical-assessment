@@ -18,6 +18,8 @@ npm i
 npm run dev
 ```
 
+[Watch the App demo video](https://github.com/vijaygodhasara/cocomo-technical-assessment/blob/master/Todo_app_recording.mov)
+
 ## Task:
 
 Modify the code to add support for due dates and image previews.
@@ -28,7 +30,6 @@ When a new task is created, users should be able to set a due date.
 
 When showing the task list is shown, it must display the due date, and if the date is past the current time, the due date should be in red.
 
-![Due dates Screenshot](https://github.com/vijaygodhasara/cocomo-technical-assessment/blob/master/Task-1-Due-date.png)
 
 ### Part 2: Image Generation 
 

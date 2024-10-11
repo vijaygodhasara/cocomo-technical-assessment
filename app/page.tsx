@@ -5,7 +5,9 @@ import { useState, useEffect } from 'react';
 export default function Home() {
   const [newTodo, setNewTodo] = useState('');
   const [dueDate, setDueDate] = useState('');
-  const [todos, setTodos] = useState([]);
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingIds, setLoadingIds] = useState<number[]>([]); // Track loading states
 
   useEffect(() => {
     fetchTodos();
@@ -23,17 +25,48 @@ export default function Home() {
 
   const handleAddTodo = async () => {
     if (!newTodo.trim()) return;
+    setIsLoading(true); // Set loading to true
     try {
-      await fetch('/api/todos', {
+      const response = await fetch('/api/todos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: newTodo, dueDate }),
       });
+      const newTodoItem = await response.json();
+
+      // Add the new todo item to the existing list
+      setTodos((prevTodos) => [ newTodoItem, ...prevTodos]);
       setNewTodo('');
       setDueDate('');
-      fetchTodos();
+
+      // Generate image after the todo is added
+      await generateImage(newTodoItem.id, newTodoItem.title);
+
     } catch (error) {
       console.error('Failed to add todo:', error);
+    } finally {
+      setIsLoading(false); // Set loading to false
+    }
+  };
+
+  const generateImage = async (todoId: number, title: string) => {
+    setLoadingIds((prev) => [...prev, todoId]); // Add the todo ID to loading state
+    try {
+      const res = await fetch('/api/todos/generateImage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ todoId, title }),
+      });
+      const { imageUrl } = await res.json();
+      
+      // Update the todo with the generated image URL
+      setTodos((prev) =>
+        prev.map((todo) => (todo.id === todoId ? { ...todo, imageUrl } : todo))
+      );
+    } catch (error) {
+      console.error('Failed to generate image:', error);
+    } finally {
+      setLoadingIds((prev) => prev.filter((id) => id !== todoId)); // Remove loading ID
     }
   };
 
@@ -78,8 +111,9 @@ export default function Home() {
           <button
             onClick={handleAddTodo}
             className="py-4 px-6 bg-indigo-600 text-white font-semibold rounded-full hover:bg-indigo-700 transition duration-300 shadow-md"
+            disabled={isLoading}
           >
-            Add Task
+            {isLoading ? 'Adding...' : 'Add Task'}
           </button>
         </div>
 
@@ -95,7 +129,7 @@ export default function Home() {
               todos.map((todo) => (
                 <li
                   key={todo.id}
-                  className="flex justify-between items-center p-4 rounded-lg shadow-md border border-gray-200 bg-gray-50"
+                  className="relative flex justify-between items-center p-4 rounded-lg shadow-md border border-gray-200 bg-gray-50"
                 >
                   <div>
                     <span className="text-lg font-medium text-gray-800">{todo.title}</span>
@@ -108,27 +142,27 @@ export default function Home() {
                         Due: {new Date(todo.dueDate).toLocaleDateString()}
                       </span>
                     )}
+                    {/* Show image if available */}
+                    {loadingIds.includes(todo.id) ? ( // Show loading state
+                      <div className="mt-2 text-gray-500">Loading image...</div>
+                    ) : (
+                      todo.imageUrl && ( // Show generated image
+                        <img
+                          src={todo.imageUrl}
+                          alt="Generated"
+                          className="mt-2 rounded-lg"
+                        />
+                      )
+                    )}
                   </div>
-
-                  <button
-                    onClick={() => handleDeleteTodo(todo.id)}
-                    className="text-red-500 hover:text-red-700 transition duration-300"
-                  >
-                    {/* Delete Icon */}
-                    <svg
-                      className="w-6 h-6"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                    <button
+                      onClick={() => handleDeleteTodo(todo.id)}
+                      className="absolute top-2 right-2 text-red-500 hover:text-red-700 transition duration-300"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
                 </li>
               ))
             )}
